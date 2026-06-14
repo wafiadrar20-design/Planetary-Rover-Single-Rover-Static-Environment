@@ -1,8 +1,8 @@
-> **FILES TO CHECK (final / correct):**
+
 > **PDDL (Q1)** → `codes/q1/domain.pddl` with `problem1_simple.pddl` (battery comfortable) and `problem2_nontrivial.pddl` (battery exact minimum).
 > **PDDL+ (Q2)** → `codes/q2/domain_plus.pddl` with `problem1_idle.pddl` (idle drain decides feasibility) and `problem2_timing.pddl` (trip order decides feasibility).
 
-Author: Hani Bouhraoua &nbsp;|&nbsp; ID: 8314923
+Author: Amri Abdlouafi-S7708121
 
 ---
 
