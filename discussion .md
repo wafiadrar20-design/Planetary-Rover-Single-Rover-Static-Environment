@@ -1,5 +1,5 @@
-Author : Hani Bouhraoua <br>
-ID : 8314923 <br>
+Author : Amri Abdelouafi <br>
+ID : S7708121 <br>
 
 # Discussion — Planetary Rover (D1-V1)
 
@@ -24,10 +24,10 @@ boundaries — nothing happens between steps, and idle time is free.
 
 In Q2, `:process idle-drain` decreases battery continuously, integrated
 over every time unit the rover spends alive. The plan now answers a
-question Q1 cannot: *how long does the rover take to collect a sample?*
-A 5-tick collection costs 5 units of charge even though no move happens.
-This is essential for real robotic execution — a controller needs to know
-that simply existing costs energy.
+question Q1 cannot: *how long does the rover take to complete its mission?*
+Every second costs charge even when no action is executing. This is
+essential for real robotic execution — a controller needs to know that
+simply existing costs energy.
 
 ### 1.2. Agency: planner-driven vs. world-driven
 
@@ -39,23 +39,23 @@ hardware timeouts. In our model, **battery-critical** is the obvious
 example: the rover doesn't *decide* to shut down; the world imposes it
 the moment charge hits the threshold.
 
-### 1.3. Feasibility is time-sensitive, not just sequence-sensitive
+### 1.3. The planner output confirms the difference
 
-A key result emerged from comparing two Q2 runs:
+Running the same 4-step mission in Q1 vs Q2 shows the structural change:
 
-| Problem            | Battery | Drain rates     | Outcome                              |
-|--------------------|---------|-----------------|--------------------------------------|
-| `problem1_idle`    | 80      | idle=1, move=2  | succeeds — battery=14 on return      |
-| `problem1_idle`    | 60      | idle=1, move=2  | **fails** — critical event at t=23   |
+| Model | Plan steps | Timestamps | Processes active |
+|-------|-----------|------------|-----------------|
+| Q1 | 4 | 0, 1, 2, 3 | none |
+| Q2 | 4 | all at 0 | idle-drain, battery-critical |
 
-Both problems have the *same map, same actions, same drain rates*. The
-only difference is initial battery. Yet with 60 units the 5-tick
-collection drains enough charge that the return move crosses the threshold.
-Q1 would declare 60 perfectly feasible; Q2 catches the failure.
+In Q2, ENHSP's discrete-time simulation runs all actions at time 0 because
+the satisficing search finds the shortest valid sequence. The key difference
+is that `system-ok` now gates every action — if the battery-critical event
+fires, the mission stops regardless of what the planner planned.
 
-> **General property:** PDDL+ planning guarantees *validity*, not
-> *optimality*. A plan valid in Q1 is not necessarily valid in Q2 — the
-> continuous world adds constraints that discrete models silently ignore.
+The Q1-P2 result (16 steps, 3 samples) shows the planner correctly routing
+via `waypoint1→site-C` as an alternative to `site-A→site-B→site-C`,
+finding the plan with fewer moves rather than fewer battery units.
 
 ### 1.4. Summary
 
@@ -126,12 +126,12 @@ before fetching site-C."*
 
 ### 2.4. Summary — when to use which
 
-| Framework             | When to use it |
-|-----------------------|----------------|
+| Framework | When to use it |
+|-----------|----------------|
 | **PDDL+ (our model)** | Everything known and deterministic. |
-| **Robust planning**   | Small disturbances; want a quick safe plan. |
-| **MDP**               | Action outcomes uncertain, but state fully known. |
-| **POMDP**             | Both action outcomes *and* current state uncertain (real robots). |
+| **Robust planning** | Small disturbances; want a quick safe plan. |
+| **MDP** | Action outcomes uncertain, but state fully known. |
+| **POMDP** | Both action outcomes *and* current state uncertain (real robots). |
 
 ### 2.5. Why we did not use MDP, POMDP, or robust planning
 
@@ -142,9 +142,9 @@ before fetching site-C."*
    cannot read probabilities. Handling uncertainty would require
    different software (POMCP, SARSOP, RDDL planners).
 3. **The deterministic model already shows the lesson.** The Q2
-   battery=80 vs battery=60 comparison already demonstrates how
-   *continuous time affects feasibility* — the exact requirement of Q2.
-   Adding probabilities would only make the feasibility window fuzzy;
+   battery-critical event already demonstrates how *continuous time
+   affects feasibility* — the exact requirement of Q2. Adding
+   probabilities would only make the feasibility window fuzzy;
    it would not change the core insight.
 
 ### 2.6. A pragmatic compromise: Sense–Plan–Act
@@ -172,8 +172,8 @@ Four simplifications remain in the present model:
 
 - **Instantaneous moves.** Travel between locations takes zero time.
   A real controller needs to know how long a move takes, not just that
-  it happened. This would require durative actions or a PDDL+ travel
-  timer — unsupported by standard ENHSP configurations.
+  it happened. This would require durative actions — unsupported by
+  ENHSP in the PDDL+ mode used here.
 - **Single sample capacity.** The rover carries one sample at a time,
   enforced implicitly. A capacity fluent would generalise this cleanly.
 - **No geometry.** `(connected ?l1 ?l2)` assumes the geometric path
