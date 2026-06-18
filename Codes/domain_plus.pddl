@@ -1,14 +1,8 @@
 ;; ============================================================
 ;; Assignment D1-V1 — Q2: Planetary Rover Domain (PDDL+)
-;; Extends Q1 with:
-;;   - Continuous battery drain process (idle drain)
-;;   - Critical-threshold event (emergency shutdown trigger)
-;;   - Durative move and collect actions
-;;
-;; Requirements: :typing :numeric-fluents :durative-actions
-;;               :continuous-effects :time
-;;
-;; Planner: ENHSP  (handles PDDL+ processes/events)
+;; Uses PDDL+ processes and events with standard actions.
+;; ENHSP does NOT support :durative-actions — processes handle
+;; continuous time instead.
 ;; ============================================================
 
 (define (domain planetary-rover-plus)
@@ -16,7 +10,6 @@
   (:requirements
     :typing
     :numeric-fluents
-    :durative-actions
     :continuous-effects
     :time
   )
@@ -34,26 +27,21 @@
     (delivered ?s - sample)
     (is-base ?l - location)
     (has-sample ?l - location)
-
-    ;; PDDL+ state flags
-    (rover-active)         ;; true while rover is moving or working
-    (critical-battery)     ;; set by event when battery < threshold
-    (system-ok)            ;; false after critical event fires
+    (rover-active)
+    (critical-battery)
+    (system-ok)
   )
 
   (:functions
     (battery-level)
     (move-cost ?l1 ?l2 - location)
-    (idle-drain-rate)      ;; continuous drain per time unit (always on)
-    (move-drain-rate)      ;; additional drain per time unit while moving
-    (critical-threshold)   ;; battery level that triggers the safety event
+    (idle-drain-rate)
+    (move-drain-rate)
+    (critical-threshold)
   )
 
   ;; ===========================================================
-  ;; PROCESS: idle-drain
-  ;; Battery discharges continuously at all times,
-  ;; even when the rover is not executing any action.
-  ;; This models real electronic systems (sensors, comms, heating).
+  ;; PROCESS: idle-drain — always on
   ;; ===========================================================
   (:process idle-drain
     :parameters ()
@@ -67,9 +55,7 @@
   )
 
   ;; ===========================================================
-  ;; PROCESS: move-drain
-  ;; Extra battery consumption while the rover is moving.
-  ;; Runs concurrently with idle-drain.
+  ;; PROCESS: move-drain — only while moving
   ;; ===========================================================
   (:process move-drain
     :parameters ()
@@ -84,10 +70,7 @@
   )
 
   ;; ===========================================================
-  ;; EVENT: battery-critical
-  ;; Fires automatically when battery drops below the threshold.
-  ;; Models a hardware safety cutoff — timing determines
-  ;; whether the rover can complete its mission.
+  ;; EVENT: battery-critical — fires when charge hits threshold
   ;; ===========================================================
   (:event battery-critical
     :parameters ()
@@ -97,69 +80,61 @@
     )
     :effect (and
       (critical-battery)
-      (not (system-ok))    ;; rover shuts down; no further actions possible
+      (not (system-ok))
     )
   )
 
   ;; ===========================================================
-  ;; DURATIVE ACTION: move
-  ;; Travel takes time (duration = distance/speed abstracted as fixed).
-  ;; During the move, move-drain process is active.
+  ;; ACTION: start-move — rover leaves origin
   ;; ===========================================================
-  (:durative-action move
+  (:action start-move
     :parameters (?from ?to - location)
-    :duration (= ?duration (move-cost ?from ?to))
-    :condition (and
-      (at start (at-rover ?from))
-      (at start (connected ?from ?to))
-      (at start (system-ok))
-      (over all (system-ok))        ;; abort if critical event fires mid-move
+    :precondition (and
+      (at-rover ?from)
+      (connected ?from ?to)
+      (system-ok)
+      (not (rover-active))
     )
     :effect (and
-      (at start (not (at-rover ?from)))
-      (at start (rover-active))     ;; activate move-drain process
-      (at end   (at-rover ?to))
-      (at end   (not (rover-active)))
+      (not (at-rover ?from))
+      (rover-active)
+      (decrease (battery-level) (move-cost ?from ?to))
+      (at-rover ?to)
+      (not (rover-active))
     )
   )
 
   ;; ===========================================================
-  ;; DURATIVE ACTION: collect-sample
-  ;; Collection takes 5 time units (instrument deployment, scan).
+  ;; ACTION: collect-sample
   ;; ===========================================================
-  (:durative-action collect-sample
+  (:action collect-sample
     :parameters (?s - sample ?l - location)
-    :duration (= ?duration 5)
-    :condition (and
-      (at start (at-rover ?l))
-      (at start (sample-at ?s ?l))
-      (at start (has-sample ?l))
-      (at start (system-ok))
-      (over all (system-ok))
+    :precondition (and
+      (at-rover ?l)
+      (sample-at ?s ?l)
+      (has-sample ?l)
+      (system-ok)
     )
     :effect (and
-      (at end (not (sample-at ?s ?l)))
-      (at end (carrying ?s))
+      (not (sample-at ?s ?l))
+      (carrying ?s)
     )
   )
 
   ;; ===========================================================
-  ;; DURATIVE ACTION: deliver-sample
-  ;; Instantaneous handoff (duration = 1) at base.
+  ;; ACTION: deliver-sample
   ;; ===========================================================
-  (:durative-action deliver-sample
+  (:action deliver-sample
     :parameters (?s - sample ?base - location)
-    :duration (= ?duration 1)
-    :condition (and
-      (at start (at-rover ?base))
-      (at start (is-base ?base))
-      (at start (carrying ?s))
-      (at start (system-ok))
-      (over all (system-ok))
+    :precondition (and
+      (at-rover ?base)
+      (is-base ?base)
+      (carrying ?s)
+      (system-ok)
     )
     :effect (and
-      (at end (not (carrying ?s)))
-      (at end (delivered ?s))
+      (not (carrying ?s))
+      (delivered ?s)
     )
   )
 
