@@ -27,7 +27,6 @@ Planning Time (msec): 5
 Expanded Nodes: 6
 States Evaluated: 10
 
-; battery: 60 - 10 (move) - 10 (move) = 40 remaining ✓
 
 ; ============================================================
 ; Q1 Problem 2 — Non-Trivial Instance
@@ -70,6 +69,4 @@ Expanded Nodes: 46
 States Evaluated: 77
 Number of Dead-Ends detected: 10
 
-; battery: 130 → 0 (exact minimum for this routing) ✓
-; planner chose waypoint1→site-C (cost 15+20=35)
-; over site-A→site-B→site-C (cost 10+10+15=35) — same cost, fewer nodes
+
