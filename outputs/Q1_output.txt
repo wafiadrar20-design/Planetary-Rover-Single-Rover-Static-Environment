@@ -1,55 +1,75 @@
 ; ============================================================
 ; Q1 Problem 1 — Simple Instance
 ; domain.pddl + problem1_simple.pddl
-; Planner: ENHSP (editor.planning.domains)
+; Planner: ENHSP (-planner sat-hadd)
 ; ============================================================
 
-domain parsed
-problem parsed
-grounding..
-grounding time: 22
-aibr preprocessing
-|f|:6  |x|:1  |a|:6  |p|:0  |e|:0
-h1 setup time (msec): 6
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 7
+Aibr Preprocessing
+|F|:6  |X|:1  |A|:6  |P|:0  |E|:0
+H1 Setup Time (msec): 4
+h(I):3.0
 g(n)= 3.0  h(n)=1.0
-problem solved
+Problem Solved
 
-found plan:
-0.0: (move base site-a)
-1.0: (collect-sample sample1 site-a)
-2.0: (move site-a base)
+Found Plan:
+0.0: (move base site-A)
+1.0: (collect-sample sample1 site-A)
+2.0: (move site-A base)
 3.0: (deliver-sample sample1 base)
 
-plan-length: 4
-metric (search): 4.0
-planning time (msec): 15
-battery-remaining: 40  [60 - 10 - 10 = 40] ✓
+Plan-Length: 4
+Metric (Search): 4.0
+Planning Time (msec): 5
+Expanded Nodes: 6
+States Evaluated: 10
+
+; battery: 60 - 10 (move) - 10 (move) = 40 remaining ✓
 
 ; ============================================================
 ; Q1 Problem 2 — Non-Trivial Instance
 ; domain.pddl + problem2_nontrivial.pddl
-; battery=130 (exact minimum — any detour fails)
+; battery=130 — planner routes via waypoint1 for site-C
 ; ============================================================
 
-found plan:
-0:  (move base site-a)           ; bat: 130→120
-1:  (collect-sample sample1 site-a)
-2:  (move site-a base)           ; bat: 120→110
-3:  (deliver-sample sample1 base)
-4:  (move base site-a)           ; bat: 110→100
-5:  (move site-a site-b)         ; bat: 100→90
-6:  (collect-sample sample2 site-b)
-7:  (move site-b site-a)         ; bat: 90→80
-8:  (move site-a base)           ; bat: 80→70
-9:  (deliver-sample sample2 base)
-10: (move base site-a)           ; bat: 70→60
-11: (move site-a site-b)         ; bat: 60→50
-12: (move site-b site-c)         ; bat: 50→35
-13: (collect-sample sample3 site-c)
-14: (move site-c site-b)         ; bat: 35→20
-15: (move site-b site-a)         ; bat: 20→10
-16: (move site-a base)           ; bat: 10→0
-17: (deliver-sample sample3 base)
+Domain parsed
+Problem parsed
+Grounding..
+Grounding Time: 8
+Aibr Preprocessing
+|F|:14  |X|:1  |A|:16  |P|:0  |E|:0
+H1 Setup Time (msec): 5
+h(I):11.0
+Problem Solved
 
-plan-length: 18
-battery-remaining: 0  [exact minimum] ✓
+Found Plan:
+0.0:  (move base site-A)              ; bat: 130 → 120
+1.0:  (collect-sample sample1 site-A)
+2.0:  (move site-A base)              ; bat: 120 → 110
+3.0:  (deliver-sample sample1 base)
+4.0:  (move base site-A)              ; bat: 110 → 100
+5.0:  (move site-A site-B)            ; bat: 100 → 90
+6.0:  (collect-sample sample2 site-B)
+7.0:  (move site-B site-A)            ; bat:  90 → 80
+8.0:  (move site-A base)              ; bat:  80 → 70
+9.0:  (deliver-sample sample2 base)
+10.0: (move base waypoint1)           ; bat:  70 → 55
+11.0: (move waypoint1 site-C)         ; bat:  55 → 35
+12.0: (collect-sample sample3 site-C)
+13.0: (move site-C waypoint1)         ; bat:  35 → 15
+14.0: (move waypoint1 base)           ; bat:  15 →  0
+15.0: (deliver-sample sample3 base)
+
+Plan-Length: 16
+Metric (Search): 16.0
+Planning Time (msec): 10
+Expanded Nodes: 46
+States Evaluated: 77
+Number of Dead-Ends detected: 10
+
+; battery: 130 → 0 (exact minimum for this routing) ✓
+; planner chose waypoint1→site-C (cost 15+20=35)
+; over site-A→site-B→site-C (cost 10+10+15=35) — same cost, fewer nodes
