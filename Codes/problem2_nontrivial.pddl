@@ -1,23 +1,8 @@
 ;; ============================================================
 ;; Assignment D1-V1 — Q1 Problem 2: Non-Trivial Instance
-;; 5 locations, 3 samples, constrained battery (80 units)
-;;
-;;  Topology:
-;;
-;;      base --(15)-- waypoint1 --(20)-- site-C
-;;        |                                 |
-;;       (25)                             (15)
-;;        |                                 |
-;;      site-A --(10)-- site-B ------------|
-;;
+;; 5 locations, 3 samples, 
 ;;  Three samples must be collected (one trip each) and
-;;  delivered to base. Battery is tight — the planner must
-;;  find an order that respects the energy constraint.
-;;  Total minimum energy required:
-;;    route: base→wp1→site-C→site-B→site-A→base (collect all) = too far
-;;    optimal: base→site-A(collect)→base | recharge not available
-;;  With 80 units the rover can complete all 3 trips only via
-;;  the shortest paths — any detour fails.
+;;  delivered to base.
 ;; ============================================================
 
 (define (problem rover-nontrivial)
@@ -32,7 +17,7 @@
     ;; --- rover starts at base ---
     (at-rover base)
 
-    ;; --- map topology (directed both ways) ---
+    ;; --- map topology  ---
     (connected base waypoint1)
     (connected waypoint1 base)
     (connected waypoint1 site-C)
