@@ -53,24 +53,6 @@
     (is-base base)
 
     ;; --- battery: tight budget ---
-    ;; Minimum energy to collect all 3 samples individually:
-    ;;   Trip 1: base→site-A→base          = 10+10 = 20
-    ;;   Trip 2: base→site-A→site-B→base   = 10+10+10 = 30  (no direct base-B)
-    ;;   Trip 3: base→wp1→site-C→base      = 15+20+20+15=70  (too expensive at 80)
-    ;;   Better Trip 3: base→site-A→site-B→site-C→site-B→site-A→base = 10+10+15+15+10+10=70
-    ;;   Total min = 20+30+70=120 → infeasible at 80
-    ;;   Feasible with chaining: collect sample2 en-route to site-C:
-    ;;     Trip 1: base→sA(collect s1)→base           = 20  (bat: 80→60)
-    ;;     Trip 2: base→sA→sB(collect s2)→base        = 30  (bat: 60→30) — no, need 30 more
-    ;;   Actually: battery 80 forces a specific ordering.
-    ;;   With 80 units, a valid plan:
-    ;;     move base→sA (10), collect s1, move sA→base (10)  [bat=60]
-    ;;     deliver s1
-    ;;     move base→sA (10), move sA→sB (10), collect s2, move sB→sA (10), move sA→base (10) [bat=20]
-    ;;     deliver s2
-    ;;     -- battery too low for site-C at this point --
-    ;;   → set battery to 120 to allow all 3 samples; keeps it non-trivial
-    ;;      (any detour wastes energy and makes it infeasible)
     (= (battery-level) 130)
   )
 
