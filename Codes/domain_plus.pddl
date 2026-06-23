@@ -1,8 +1,5 @@
 ;; ============================================================
 ;; Assignment D1-V1 — Q2: Planetary Rover Domain (PDDL+)
-;; Uses PDDL+ processes and events with standard actions.
-;; ENHSP does NOT support :durative-actions — processes handle
-;; continuous time instead.
 ;; ============================================================
 
 (define (domain planetary-rover-plus)
