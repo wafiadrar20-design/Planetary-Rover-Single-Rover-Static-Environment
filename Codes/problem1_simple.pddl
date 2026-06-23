@@ -1,9 +1,6 @@
 ;; ============================================================
 ;; Assignment D1-V1 — Q1 Problem 1: Simple Instance
 ;; 3 locations, 1 sample, generous battery
-;;
-;;  base --- (10) --- site-A --- (10) --- site-B
-;;  (all edges bidirectional, each direction stated explicitly)
 ;; ============================================================
 
 (define (problem rover-simple)
@@ -18,7 +15,7 @@
     ;; --- rover starts at base ---
     (at-rover base)
 
-    ;; --- map topology (directed; both directions given) ---
+    ;; --- map topology ---
     (connected base site-A)
     (connected site-A base)
     (connected site-A site-B)
@@ -38,7 +35,7 @@
     (is-base base)
 
     ;; --- battery ---
-    (= (battery-level) 60)   ;; plenty for a simple round trip
+    (= (battery-level) 60)   
   )
 
   ;; Goal: sample1 delivered and rover back at base
