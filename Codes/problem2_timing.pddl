@@ -1,3 +1,9 @@
+;; ============================================================
+;; Assignment D1-V1 — Q2 Problem 2: problem2_timing
+;;  Three samples must be collected (one trip each) and
+;;  delivered to base.
+;; ============================================================
+
 (define (problem rover-plus-timing)
   (:domain planetary-rover-plus)
 
